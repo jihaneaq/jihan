@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="text-center mb-5 fw-bold text-primary">🧠Quiz</h1>
+
+            <form action="{{ path('quiz_result') }}" method="POST">
+                {% for q in questions %}
+                    <div class="card mb-4 p-4">
+                        <h4 class="mb-3 text-secondary">{{ loop.index }}. {{ q.question }}</h4>
+                        
+                        {% for i in 1..4 %}
+                            {% set choice = attribute(q, 'choice' ~ i) %}
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" 
+                                       name="q{{ q.id }}" id="q{{ q.id }}_{{ i }}" 
+                                       value="{{ choice }}" required>
+                                <label class="form-check-label w-100 p-2 border rounded" for="q{{ q.id }}_{{ i }}">
+                                    {{ choice }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg px-5 shadow">Valider mes réponses</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

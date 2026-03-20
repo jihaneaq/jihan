@@ -1,0 +1,87 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="p-5 mb-4 bg-light rounded-3 border shadow-sm text-center">
+        <h1 class="display-5 fw-bold"> Quiz ! 🎓</h1>
+        
+        {% if app.user %}
+            <p class="fs-4 mt-3 text-primary">Ravi de vous revoir, {{ app.user.userIdentifier }} !</p>
+        {% endif %}
+
+        <p class="col-md-8 fs-4 mx-auto mt-3">
+            Teste tes connaissances dès maintenant. Nous avons actuellement 
+            <span class="badge bg-primary">{{ totalQuestions }}</span> questions pour toi.
+        </p>
+        
+        <hr class="my-4">
+        
+        {# On désactive le bouton si aucune question n'existe #}
+        {% if totalQuestions > 0 %}
+            <a href="{{ path('quiz_index') }}" class="btn btn-success btn-lg px-5">
+                Commencer le Quiz
+            </a>
+        {% else %}
+            <div class="alert alert-warning d-inline-block">
+                ⚠️ Le quiz sera bientôt disponible (0 questions en base).
+            </div>
+        {% endif %}
+    </div>
+
+    {# --- SECTION HISTORIQUE --- #}
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            {% if app.user %}
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white">
+                        <h3 class="mb-0 h5">📊 Votre historique (5 derniers scores)</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if app.user.scores is empty %}
+                            <p class="text-muted mb-0 text-center">Vous n'avez pas encore de scores enregistrés. À vous de jouer !</p>
+                        {% else %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Note</th>
+                                            <th>Performance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for s in app.user.scores|reverse|slice(0, 5) %}
+                                            <tr>
+                                                <td>{{ s.createdAt|date('d/m/Y H:i') }}</td>
+                                                <td><strong>{{ s.score }} / {{ totalQuestions }}</strong></td>
+                                                <td>
+                                                    {# --- PROTECTION DIVISION PAR ZERO ICI --- #}
+                                                    {% if totalQuestions > 0 %}
+                                                        {% set score_pourcentage = (s.score / totalQuestions) * 100 %}
+                                                        <div class="progress" style="height: 10px; width: 150px;">
+                                                            <div class="progress-bar {{ score_pourcentage >= 50 ? 'bg-success' : 'bg-danger' }}" 
+                                                                 role="progressbar" style="width: {{ score_pourcentage }}%"></div>
+                                                        </div>
+                                                    {% else %}
+                                                        <span class="text-muted small">N/A</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info text-center shadow-sm">
+                    <p class="mb-2">Connectez-vous pour enregistrer vos scores et suivre votre progression !</p>
+                    <a href="{{ path('app_login') }}" class="btn btn-sm btn-outline-primary me-2">Se connecter</a>
+                    <a href="{{ path('app_register') }}" class="btn btn-sm btn-outline-secondary">Créer un compte</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

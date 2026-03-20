@@ -1,0 +1,107 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="row justify-content-center">
+    <div class="col-md-8 text-center">
+        <div class="card p-5 shadow-sm">
+            <h1 class="mb-4">Résultat</h1>
+            
+            {# --- PROTECTION DIVISION PAR ZERO --- #}
+            {% if total > 0 %}
+                {% set pourcentage = (score / total) * 100 %}
+            {% else %}
+                {% set pourcentage = 0 %}
+            {% endif %}
+            
+            <div class="progress mb-4" style="height: 30px;">
+                <div class="progress-bar {{ pourcentage >= 50 ? 'bg-success' : 'bg-danger' }}" 
+                     role="progressbar" style="width: {{ pourcentage }}%">
+                    {{ pourcentage|round }}%
+                </div>
+            </div>
+
+            <h2 class="display-4 fw-bold {{ pourcentage >= 50 ? 'text-success' : 'text-danger' }}">
+                {{ score }} / {{ total }}
+            </h2>
+
+            <p class="lead mt-3">
+                {% if total == 0 %}
+                    Aucune question n'a été traitée.
+                {% elseif pourcentage == 100 %} 
+                    Parfait ! Vous êtes un expert ! 🌟
+                {% elseif pourcentage >= 50 %} 
+                    Bien joué ! Vous avez la moyenne. 👍
+                {% else %} 
+                    Dommage... Réessayez pour faire mieux ! 💪
+                {% endif %}
+            </p>
+
+            <hr class="my-5">
+
+            {# --- ÉTAPE 1 : CHOIX DE LA CORRECTION --- #}
+            <div id="choix-correction" class="py-3">
+                <p class="fs-5">Souhaitez-vous consulter la correction détaillée ?</p>
+                {% if total > 0 %}
+                    <button class="btn btn-info btn-lg text-white me-2" onclick="afficherLaCorrection()">
+                        ✅ Oui, voir la correction
+                    </button>
+                {% endif %}
+                <a href="{{ path('quiz_index') }}" class="btn btn-outline-secondary btn-lg">
+                    ❌ Non, recommencer
+                </a>
+            </div>
+
+            {# --- ÉTAPE 2 : LA SECTION CORRECTION --- #}
+            <div id="section-correction" class="text-start" style="display: none;">
+                <h3 class="mb-4 text-center">Correction détaillée</h3>
+                
+                {% for item in correction %}
+                    <div class="card mb-3 border-start border-4 {{ item.estCorrect ? 'border-success' : 'border-danger' }}">
+                        <div class="card-body">
+                            <h5 class="card-title">Question : {{ item.question }}</h5>
+                            
+                            <p class="mb-1">
+                                <strong>Votre réponse :</strong> 
+                                <span class="{{ item.estCorrect ? 'text-success' : 'text-danger' }}">
+                                    {{ item.reponseUtilisateur ?: 'Pas de réponse' }}
+                                </span>
+                                {% if item.estCorrect %}
+                                    <span class="ms-2">✅</span>
+                                {% else %}
+                                    <span class="ms-2">❌</span>
+                                {% endif %}
+                            </p>
+                            
+                            {% if not item.estCorrect %}
+                                <p class="mb-0 text-muted">
+                                    <strong>La bonne réponse était :</strong> 
+                                    <span class="text-success fw-bold">{{ item.bonneReponse }}</span>
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+
+                <div class="mt-4 text-center">
+                    {# CORRECTION ICI : app_quiz_home au lieu de app_home #}
+                    <a href="{{ path('app_quiz_home') }}" class="btn btn-outline-secondary me-2">
+                        🏠 Accueil
+                    </a>
+                    <a href="{{ path('quiz_index') }}" class="btn btn-primary">
+                        🔄 Recommencer le quiz
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function afficherLaCorrection() {
+    document.getElementById('choix-correction').style.display = 'none';
+    const section = document.getElementById('section-correction');
+    section.style.display = 'block';
+    section.scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+{% endblock %}

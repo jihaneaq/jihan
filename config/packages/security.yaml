@@ -1,0 +1,55 @@
+security:
+    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+
+    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+    providers:
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+
+    firewalls:
+        dev:
+            # Assure que les outils de debug et les assets sont toujours autorisés
+            pattern: ^/(_profiler|_wdt|assets|build)/
+            security: false
+        main:
+            lazy: true
+            provider: app_user_provider
+            custom_authenticator: App\Security\AppCustomAuthenticator
+            logout:
+                path: app_logout
+                # where to redirect after logout
+                # target: app_any_route
+
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800
+                path: /
+                # by default, the feature is enabled by checking a checkbox in the
+                # login form, uncomment the following line to always enable it.
+                #always_remember_me: true
+
+            # Si vous n'avez pas encore de formulaire de connexion, 
+            # Symfony peut bloquer les accès par défaut sur certaines routes.
+
+    # Note: Seule la *première* règle qui correspond est appliquée
+    access_control:
+        # Cette ligne autorise l'accès public à TOUTES les pages de votre application.
+        # C'est idéal pour le développement afin de régler votre erreur 401/HttpException.
+        - { path: ^/, roles: PUBLIC_ACCESS }
+
+        # Une fois que vous aurez créé un formulaire de connexion, vous pourrez restreindre :
+        # - { path: ^/admin, roles: ROLE_ADMIN }
+        # - { path: ^/profile, roles: ROLE_USER }
+
+when@test:
+    security:
+        password_hashers:
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                algorithm: auto
+                cost: 4 
+                time_cost: 3 
+                memory_cost: 10
